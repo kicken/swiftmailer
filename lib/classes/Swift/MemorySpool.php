@@ -95,7 +95,7 @@ class Swift_MemorySpool implements Swift_Spool
                         // re-queue the message in a separate queue to give the other
                         // messages a chance to be sent, in case the failure was due to
                         // this message and not just the transport failing
-                        array_push($retryQueue, $message);
+                        array_unshift($retryQueue, $message);
 
                         // wait half a second before we try again
                         usleep(500000);
