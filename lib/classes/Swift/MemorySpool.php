@@ -92,8 +92,6 @@ class Swift_MemorySpool implements Swift_Spool
                     $count += $transport->send($message, $failedRecipients);
                 } catch (Swift_TransportException $exception){
                     if ($retries){
-                        $transport->stop();
-                        $transport->start();
                         // re-queue the message in a separate queue to give the other
                         // messages a chance to be sent, in case the failure was due to
                         // this message and not just the transport failing

@@ -495,13 +495,15 @@ abstract class Swift_Transport_AbstractSmtpTransport implements Swift_Transport
             }
         }
 
-        if (0 != $sent) {
-            $sent += count($failedRecipients);
-            $this->doDataCommand($failedRecipients);
-            $sent -= count($failedRecipients);
+        try {
+            if (0 != $sent) {
+                $sent += count($failedRecipients);
+                $this->doDataCommand($failedRecipients);
+                $sent -= count($failedRecipients);
 
-            $this->streamMessage($message);
-        } else {
+                $this->streamMessage($message);
+            }
+        } finally {
             $this->reset();
         }
 
