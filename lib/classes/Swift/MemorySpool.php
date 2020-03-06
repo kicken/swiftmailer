@@ -85,24 +85,27 @@ class Swift_MemorySpool implements Swift_Spool
 
         $count = 0;
         $retries = $this->flushRetries;
+        $retryQueue = [];
         while ($retries--) {
-            try {
-                while ($message = array_pop($this->messages)) {
+            while ($message = array_pop($this->messages)){
+                try {
                     $count += $transport->send($message, $failedRecipients);
-                }
-            } catch (Swift_TransportException $exception) {
-                if ($retries) {
-                    // re-queue the message at the end of the queue to give a chance
-                    // to the other messages to be sent, in case the failure was due to
-                    // this message and not just the transport failing
-                    array_unshift($this->messages, $message);
+                } catch (Swift_TransportException $exception){
+                    if ($retries){
+                        // re-queue the message in a separate queue to give the other
+                        // messages a chance to be sent, in case the failure was due to
+                        // this message and not just the transport failing
+                        array_push($retryQueue, $message);
 
-                    // wait half a second before we try again
-                    usleep(500000);
-                } else {
-                    throw $exception;
+                        // wait half a second before we try again
+                        usleep(500000);
+                    } else {
+                        throw $exception;
+                    }
                 }
             }
+
+            $this->messages = $retryQueue;
         }
 
         return $count;
